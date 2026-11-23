@@ -1,0 +1,24 @@
+{
+  "name": "pi-polisher-agent",
+  "version": "1.0.0",
+  "description": "基于 Pi (@earendil-works/pi-agent-core & @earendil-works/pi-ai) 搭建的文本润色 Agent 工作流",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "polish": "tsx src/index.ts",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "test": "tsx --test src/workflow.test.ts"
+  },
+  "dependencies": {
+    "@earendil-works/pi-agent-core": "^1.6.0",
+    "@earendil-works/pi-ai": "^1.6.0",
+    "dotenv": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
