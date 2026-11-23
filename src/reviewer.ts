@@ -13,6 +13,8 @@ import {
   type Models,
   type Usage,
 } from "@earendil-works/pi-ai";
+import type { GlossaryEntry } from "./glossary.js";
+import type { FidelityCheckReport } from "./guardrails.js";
 import {
   buildReviewUserPrompt,
   composeReviewerSystemPrompt,
@@ -30,6 +32,16 @@ export interface ReviewPolishOptions {
   model: Model<Api>;
   /** 与润色 Agent 保持一致的风格 Skill 列表 */
   skills?: readonly PolishSkill[];
+  /** 与润色 Agent 保持一致的专有名词术语表 */
+  glossary?: readonly GlossaryEntry[];
+  /** 上一块只读衔接上文（供评审检测是否重复泄漏上文） */
+  previousContext?: string;
+  /** 程序自动预检生成的风险线索报告 */
+  fidelityChecks?: FidelityCheckReport;
+  /** 当前分块序号（从 1 开始） */
+  chunkIndex?: number;
+  /** 总分块数 */
+  chunkCount?: number;
   /** 自定义评审员角色基础系统提示词 */
   systemPrompt?: string;
   thinkingLevel?: ThinkingLevel;
@@ -71,7 +83,7 @@ const SUBMIT_REVIEW_SCHEMA = {
     suggestions: {
       type: "array",
       items: { type: "string" },
-      description: "给润色员的可执行修改建议；通过时可传空数组",
+      description: "给润色员的可执行定点修改建议；通过时可传空数组",
     },
   },
   required: ["passed", "summary"],
@@ -163,7 +175,7 @@ export function createSubmitReviewTool(
   return {
     name: SUBMIT_REVIEW_TOOL_NAME,
     label: "提交评审结论",
-    description: "提交对当前润色稿的二元评审结论（通过或不通过）及返工意见。",
+    description: "提交对当前润色稿的二元评审结论（通过或不通过）及定点返工意见。",
     parameters: SUBMIT_REVIEW_SCHEMA,
     async execute(_toolCallId, params) {
       const normalized = normalizeReviewResult(params as RawReviewPayload);
@@ -185,7 +197,7 @@ export function createSubmitReviewTool(
 }
 
 /**
- * 调用独立的评审 Agent，对照原文、润色稿与同一组风格 Skill 做出“通过 / 不通过”判定
+ * 调用独立的评审 Agent，对照原文、润色稿、确定性预检线索、术语表与风格 Skill 做出“通过 / 不通过”判定
  */
 export async function reviewPolishDraft(
   originalText: string,
@@ -201,6 +213,7 @@ export async function reviewPolishDraft(
   const systemPrompt = composeReviewerSystemPrompt(
     options.skills ?? [],
     options.systemPrompt ?? REVIEWER_SYSTEM_PROMPT,
+    options.glossary ?? [],
   );
 
   const reviewerAgent = new Agent({
@@ -228,7 +241,14 @@ export async function reviewPolishDraft(
   }
 
   try {
-    await reviewerAgent.prompt(buildReviewUserPrompt(originalText, draftText, options.attempt ?? 1));
+    await reviewerAgent.prompt(
+      buildReviewUserPrompt(originalText, draftText, options.attempt ?? 1, {
+        previousContext: options.previousContext,
+        fidelityChecks: options.fidelityChecks,
+        chunkIndex: options.chunkIndex,
+        chunkCount: options.chunkCount,
+      }),
+    );
   } finally {
     options.signal?.removeEventListener("abort", onAbort);
   }
