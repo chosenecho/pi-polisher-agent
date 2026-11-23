@@ -29,6 +29,8 @@ flowchart TD
 - **[架构与双 AgentLoop 设计说明](docs/architecture.md)**：防意思漂移四层设计、模块职责、分块与滑动上文、确定性预检、Pi 原生循环钩子与 `submit_review` 兜底机制。
 - **[风格 Skill 使用与开发指南](docs/skills-guide.md)**：内置附加风格说明、多风格叠加规则，以及自定义 `SKILL.md` 编写规范。
 - **[CLI、环境变量与编程 API 参考手册](docs/api-and-cli.md)**：完整 CLI 参数、术语表文件格式、交互命令、环境变量优先级、TypeScript API 与离线测试说明。
+- **[实践调优与常见问题排查](docs/troubleshooting.md)**：分块调优、防漂移排查、确定性预检告警解读、Windows 多行输入与端点排障。
+- **[贡献指南](CONTRIBUTING.md)** · **[变更日志](CHANGELOG.md)** · **[Agent 开发约定](AGENTS.md)**
 
 ## 项目结构
 
@@ -36,7 +38,8 @@ flowchart TD
 ├── docs/
 │   ├── architecture.md       # 架构、防语义漂移机制与双 AgentLoop 设计说明
 │   ├── skills-guide.md       # 附加风格 Skill 使用与开发指南
-│   └── api-and-cli.md        # CLI、术语表、环境变量与编程 API 参考手册
+│   ├── api-and-cli.md        # CLI、术语表、环境变量与编程 API 参考手册
+│   └── troubleshooting.md    # 实践调优与常见问题排查
 ├── skills/
 │   ├── formal/SKILL.md       # 正式商务 / 公文风格叠加 Skill
 │   ├── concise/SKILL.md      # 精炼干练风格叠加 Skill
@@ -53,6 +56,10 @@ flowchart TD
 │   ├── workflow.ts           # 分块调度与双 AgentLoop 闭环编排（polishText / createPolisherAgent）
 │   ├── index.ts              # CLI 入口（文件、参数、管道、交互模式、分块人工复核清单）
 │   └── workflow.test.ts      # 基于 Pi fauxProvider 的离线全链路自动化测试
+├── AGENTS.md                 # 面向 AI Coding Agent 的核心不变量与按需文档索引
+├── CHANGELOG.md              # 版本变更日志
+├── CONTRIBUTING.md           # 贡献与本地开发指南
+├── glossary.example.txt      # 专有名词与 ASR 误识纠错术语表示例模板
 ├── .env.example              # 环境变量配置示例
 ├── package.json
 └── tsconfig.json
